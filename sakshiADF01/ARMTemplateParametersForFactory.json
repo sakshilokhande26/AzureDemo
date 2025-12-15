@@ -1,0 +1,60 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "sakshiADF01"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
+		"AzureBlobStorage2_connectionString": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"SqlServer1_password": {
+			"value": ""
+		},
+		"paramLinkedService_sql_password": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://sakshiadls.dfs.core.windows.net/"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "sqldemosl.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "demodb"
+		},
+		"Paramlinkedservice2_properties_typeProperties_server": {
+			"value": "@{linkedService().serverName}"
+		},
+		"Paramlinkedservice2_properties_typeProperties_database": {
+			"value": "@{linkedService().dbName}"
+		},
+		"Paramlinkedservice2_properties_typeProperties_userName": {
+			"value": "@{linkedService().userName}"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"value": "DESKTOP-R9CO7G4\\VE_SERVER"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"value": "db30Oct"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "sa"
+		},
+		"paramLinkedService_sql_properties_typeProperties_server": {
+			"value": "mydbserver.windows"
+		},
+		"paramLinkedService_sql_properties_typeProperties_database": {
+			"value": "@{linkedService().dbName}"
+		},
+		"paramLinkedService_sql_properties_typeProperties_userName": {
+			"value": "sakshi"
+		}
+	}
+}
