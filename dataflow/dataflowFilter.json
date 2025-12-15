@@ -45,6 +45,7 @@
 				"          age as string,",
 				"          city as string",
 				"     ),",
+				"     partitionFileNames:['PayrollEmp'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
