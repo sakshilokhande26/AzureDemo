@@ -1,0 +1,73 @@
+{
+	"name": "demoDF",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmployeeDS",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeData"
+				},
+				{
+					"dataset": {
+						"referenceName": "deptDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "deptData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EmpDepData",
+						"type": "DatasetReference"
+					},
+					"name": "EmpDepOut"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joinEmpDeptData"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          name as string,",
+				"          country as string,",
+				"          deoartment as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> EmployeeData",
+				"source(output(",
+				"          depid as string,",
+				"          depname as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> deptData",
+				"EmployeeData, deptData join(deoartment == depid,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinEmpDeptData",
+				"joinEmpDeptData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          name as string,",
+				"          age as string,",
+				"          city as string",
+				"     ),",
+				"     partitionFileNames:['EmpDepData'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> EmpDepOut"
+			]
+		}
+	}
+}

@@ -1,0 +1,75 @@
+{
+	"name": "mailVmstatus",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetVMstatus",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://management.azure.com/subscriptions/9b0cdd22-4a9c-4e40-a396-0f76274d49cc/resourceGroups/demoresource01/providers/Microsoft.Compute/virtualMachines/vm1/instanceView?api-version=2025-04-01",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			},
+			{
+				"name": "Check If Stopped",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "GetVMstatus",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@contains(string(activity('GetVMstatus').output.statuses), 'PowerState/stopped')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Send Email via Logic App",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"headers": {
+									"Content-Type": "application/json"
+								},
+								"url": "https://prod-14.northcentralus.logic.azure.com:443/workflows/8a4d5f71d1a94c8a916bf92a08e173ea/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=D3dADAyqcRG9pKNZbrL-jQTWhZb-1o5F2Ik9ZXoeOR0",
+								"body": {
+									"vmName": "vm1"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-12-05T12:30:44Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
