@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "sourceEmp"
+				},
+				{
+					"dataset": {
+						"referenceName": "deptDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDep"
 				}
 			],
 			"sinks": [
@@ -18,12 +25,15 @@
 						"referenceName": "EmpDepData",
 						"type": "DatasetReference"
 					},
-					"name": "AggCount"
+					"name": "AggEmpDep"
 				}
 			],
 			"transformations": [
 				{
 					"name": "aggregateCount"
+				},
+				{
+					"name": "join1"
 				}
 			],
 			"scriptLines": [
@@ -36,9 +46,21 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> sourceEmp",
+				"source(output(",
+				"          depid as string,",
+				"          depname as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceDep",
 				"sourceEmp aggregate(groupBy(department),",
 				"     TotalEmp = count(empid)) ~> aggregateCount",
-				"aggregateCount sink(allowSchemaDrift: true,",
+				"aggregateCount, sourceDep join(department == depid,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          id as string,",
@@ -46,10 +68,14 @@
 				"          age as string,",
 				"          city as string",
 				"     ),",
-				"     partitionFileNames:['CountEmpData'],",
+				"     partitionFileNames:['EmpDepCount'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> AggCount"
+				"     mapColumn(",
+				"          name = depname,",
+				"          id = TotalEmp",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> AggEmpDep"
 			]
 		}
 	}
