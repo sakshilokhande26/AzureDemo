@@ -1,0 +1,56 @@
+{
+	"name": "dataflowAgg",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpDS",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEmp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EmpDepData",
+						"type": "DatasetReference"
+					},
+					"name": "AggCount"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregateCount"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          name as string,",
+				"          country as string,",
+				"          department as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEmp",
+				"sourceEmp aggregate(groupBy(department),",
+				"     TotalEmp = count(empid)) ~> aggregateCount",
+				"aggregateCount sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          name as string,",
+				"          age as string,",
+				"          city as string",
+				"     ),",
+				"     partitionFileNames:['CountEmpData'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> AggCount"
+			]
+		}
+	}
+}
