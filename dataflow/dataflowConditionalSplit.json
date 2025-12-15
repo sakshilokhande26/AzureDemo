@@ -1,0 +1,96 @@
+{
+	"name": "dataflowConditionalSplit",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpDS",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEmp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EmpDepData",
+						"type": "DatasetReference"
+					},
+					"name": "sinkIT"
+				},
+				{
+					"dataset": {
+						"referenceName": "EmpDepData",
+						"type": "DatasetReference"
+					},
+					"name": "sinkPR"
+				},
+				{
+					"dataset": {
+						"referenceName": "EmpDepData",
+						"type": "DatasetReference"
+					},
+					"name": "sinkHR"
+				}
+			],
+			"transformations": [
+				{
+					"name": "splitOnDep"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          name as string,",
+				"          country as string,",
+				"          department as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEmp",
+				"sourceEmp split(equals(department,'1'),",
+				"     equals(department,'2'),",
+				"     equals(department,'3'),",
+				"     disjoint: false) ~> splitOnDep@(ITDep, HRDep, PayrollDep, Other)",
+				"splitOnDep@ITDep sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          name as string,",
+				"          age as string,",
+				"          city as string",
+				"     ),",
+				"     partitionFileNames:['ITEmp.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkIT",
+				"splitOnDep@PayrollDep sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          name as string,",
+				"          age as string,",
+				"          city as string",
+				"     ),",
+				"     partitionFileNames:['PayrollEmp.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkPR",
+				"splitOnDep@HRDep sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          name as string,",
+				"          age as string,",
+				"          city as string",
+				"     ),",
+				"     partitionFileNames:['HREmp.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkHR"
+			]
+		}
+	}
+}
