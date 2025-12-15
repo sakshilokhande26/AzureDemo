@@ -2764,6 +2764,7 @@
 						"          age as string,",
 						"          city as string",
 						"     ),",
+						"     partitionFileNames:['PayrollEmp'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> sink1"
 					]
@@ -2817,6 +2818,336 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflowAgg')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpDS",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEmp"
+						},
+						{
+							"dataset": {
+								"referenceName": "deptDataSet",
+								"type": "DatasetReference"
+							},
+							"name": "sourceDep"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "EmpDepData",
+								"type": "DatasetReference"
+							},
+							"name": "AggEmpDep"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregateCount"
+						},
+						{
+							"name": "join1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          name as string,",
+						"          country as string,",
+						"          department as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEmp",
+						"source(output(",
+						"          depid as string,",
+						"          depname as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceDep",
+						"sourceEmp aggregate(groupBy(department),",
+						"     TotalEmp = count(empid)) ~> aggregateCount",
+						"aggregateCount, sourceDep join(department == depid,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          age as string,",
+						"          city as string",
+						"     ),",
+						"     partitionFileNames:['EmpDepCount'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          name = depname,",
+						"          id = TotalEmp",
+						"     ),",
+						"     partitionBy('hash', 1)) ~> AggEmpDep"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmpDS')]",
+				"[concat(variables('factoryId'), '/datasets/deptDataSet')]",
+				"[concat(variables('factoryId'), '/datasets/EmpDepData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflowConditionalSplit')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpDS",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEmp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "EmpDepData",
+								"type": "DatasetReference"
+							},
+							"name": "sinkIT"
+						},
+						{
+							"dataset": {
+								"referenceName": "EmpDepData",
+								"type": "DatasetReference"
+							},
+							"name": "sinkPR"
+						},
+						{
+							"dataset": {
+								"referenceName": "EmpDepData",
+								"type": "DatasetReference"
+							},
+							"name": "sinkHR"
+						}
+					],
+					"transformations": [
+						{
+							"name": "splitOnDep"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          name as string,",
+						"          country as string,",
+						"          department as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEmp",
+						"sourceEmp split(equals(department,'1'),",
+						"     equals(department,'2'),",
+						"     equals(department,'3'),",
+						"     disjoint: false) ~> splitOnDep@(ITDep, HRDep, PayrollDep, Other)",
+						"splitOnDep@ITDep sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          age as string,",
+						"          city as string",
+						"     ),",
+						"     partitionFileNames:['ITEmp.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkIT",
+						"splitOnDep@PayrollDep sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          age as string,",
+						"          city as string",
+						"     ),",
+						"     partitionFileNames:['PayrollEmp.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkPR",
+						"splitOnDep@HRDep sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          age as string,",
+						"          city as string",
+						"     ),",
+						"     partitionFileNames:['HREmp.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkHR"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmpDS')]",
+				"[concat(variables('factoryId'), '/datasets/EmpDepData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflowDerive')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpDS",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEmp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "EmpDepData",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          name as string,",
+						"          country as string,",
+						"          department as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEmp",
+						"sourceEmp derive(country = upper(country)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          age as string,",
+						"          city as string",
+						"     ),",
+						"     partitionFileNames:['DeriveEmp'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmpDS')]",
+				"[concat(variables('factoryId'), '/datasets/EmpDepData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflowExists')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpDS",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEmp"
+						},
+						{
+							"dataset": {
+								"referenceName": "deptDataSet",
+								"type": "DatasetReference"
+							},
+							"name": "sourceDep"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "EmpDepData",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "exists1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          name as string,",
+						"          country as string,",
+						"          department as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEmp",
+						"source(output(",
+						"          depid as string,",
+						"          depname as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceDep",
+						"sourceEmp, sourceDep exists(department == depid,",
+						"     negate:false,",
+						"     broadcast: 'auto')~> exists1",
+						"exists1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          age as string,",
+						"          city as string",
+						"     ),",
+						"     partitionFileNames:['ExistDepEmp.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/EmpDS')]",
+				"[concat(variables('factoryId'), '/datasets/deptDataSet')]",
+				"[concat(variables('factoryId'), '/datasets/EmpDepData')]"
 			]
 		}
 	]
