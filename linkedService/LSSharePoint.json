@@ -1,0 +1,15 @@
+{
+	"name": "LSSharePoint",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SharePointOnlineList",
+		"typeProperties": {
+			"siteUrl": "https://nicesoftwaresolutions1-my.sharepoint.com/",
+			"tenantId": "842e4e0e-1c63-4147-b5bc-2b8baed2f998",
+			"servicePrincipalId": "6641fdb5-5082-402c-b4af-95fa3ef111a0",
+			"servicePrincipalCredentialType": "ServicePrincipalKey",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDgyQ0UxQzZFLUJCRDYtNDlGNy1BMEMyLUMxMTExQjczRDc3Q180NjBlZGFkNi1mYjFhLTQyYzItYjU3NC1mYmQ5ODY5MDExMzMiDQp9"
+		}
+	}
+}
