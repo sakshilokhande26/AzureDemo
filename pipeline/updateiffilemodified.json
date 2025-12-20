@@ -254,7 +254,7 @@
 								"headers": {
 									"Content-Type": "application/json"
 								},
-								"url": "https://prod-26.northcentralus.logic.azure.com:443/workflows/c6d13c30e2a1430ea3d9710c6d599aa1/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=3VSiF2SPUgFowsRTlAbmR5bTa4cYmk-ihn3fXVdeytc",
+								"url": "https://prod-04.northcentralus.logic.azure.com:443/workflows/6ce3c078b79e4948812e2257509d353b/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=VPsKxpDFMcESp9Zq39nJV47Zn2Glfsjuc9Gxvqe63jA",
 								"body": {
 									"value": "{\n    \"to\": \"@{pipeline().parameters.NotificationEmail}\",\n    \"subject\": \"ADF Pipeline Success - SCD2 Merge Completed\",\n    \"body\": \"<h2>✅ SCD Type 2 Merge Completed</h2>\" }\n    ",
 									"type": "Expression"
