@@ -336,7 +336,7 @@
 			},
 			"LastRunTimestamp": {
 				"type": "string",
-				"defaultValue": "2025-12-05T00:00:00Z "
+				"defaultValue": "2025-12-10T00:00:00Z "
 			},
 			"NotificationEmail": {
 				"type": "string",
