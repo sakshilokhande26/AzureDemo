@@ -321,7 +321,7 @@
 			},
 			"SourceFolderPath": {
 				"type": "string",
-				"defaultValue": "target"
+				"defaultValue": "source"
 			},
 			"SourceFileName": {
 				"type": "string",
